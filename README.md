@@ -72,7 +72,7 @@ end
 
 ### Evolve
 
-`Unit#evolve(total_units, generations, crossover_rate, variation_rate)` return latest units
+`Unit#evolve(total_units, generations, crossover_rate, muration_rate)` return latest units
 
 ```
 units = Unit.evolve(32, 100, 0.8, 0.15) 
