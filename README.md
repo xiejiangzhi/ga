@@ -1,8 +1,7 @@
-# Ga
+# GA
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/ga`. To experiment with that code, run `bin/console` for an interactive prompt.
+Simple Framework for Genetic Algorithm
 
-TODO: Delete this and the text above, and describe your gem
 
 ## Installation
 
@@ -22,17 +21,92 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+### Define your unit
 
-## Development
+require methods:
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+* `Unit.random_new`
+* `Unit#initialize(genome)` need copy genome
+* `Unit#fitness` return fitness
+* `Unit#fitness=` #set fitness
+* `Unit#cross!(target_unit)`
+* `Unit#mutate!`
+* `Unit#<=>(target_unit)`
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```
+class Unit
+  include GA
+
+  attr_accessor :genome, :fitness
+
+  def self.random_new
+    self.new(3.times.map { rand(3) })
+  end
+
+  def initialize(genome)
+    @genome = genome.dup
+  end
+
+  def fitness
+    @fitness ||= genome.reduce(&:+)
+  end
+
+  def cross!(target)
+    (rand(3) + 1).times do |i|
+      genome[i], target.genome[i] = target.genome[i], genome[i]
+    end
+  end
+
+  def mutate!
+    (rand(3) + 1).times do
+      i = rand(3)
+      genome[i] = (genome[i] + rand(3)) % 3
+    end
+  end
+
+  def <=>(target)
+    self.fitness <=> target.fitness
+  end
+end
+```
+
+### Evolve
+
+`Unit#evolve(total_units, generations, crossover_rate, variation_rate)` return latest units
+
+```
+units = Unit.evolve(32, 100, 0.8, 0.15) 
+best = units.max
+```
+
+### Print evolve info
+
+```
+gz = Unit.new_ga_zoo
+ga.debug!
+units = ga.evolve(32, 100, 0.8, 0.15)
+```
+
+### Use `before_init_fitness` callback
+
+```
+gz = Unit.new_ga_zoo
+gz.before_init_fitness do |units, generation|
+  # parallel calculate fitness
+  data = Parallel.map(units, in_processes: 8) {|unit| unit.fitness }
+  units.each_with_index {|unit, index| unit.fitness = data[index] }
+end
+```
+
+### More
+
+see `examples/` folder
+
+
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/ga.
+Bug reports and pull requests are welcome on GitHub at https://github.com/xjz19901211/ga.
 
 
 ## License

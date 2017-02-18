@@ -1,3 +1,3 @@
-module Ga
+module GA
   VERSION = "0.1.0"
 end
