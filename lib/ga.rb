@@ -6,6 +6,10 @@ module GA
     cls.extend(ClassMethods)
   end
 
+  def <=>(target)
+    fitness <=> target.fitness
+  end
+
   module ClassMethods
     def new_ga_zoo
       GA::Zoo.new(self)

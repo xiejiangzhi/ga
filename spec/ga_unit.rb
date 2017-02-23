@@ -29,9 +29,5 @@ class Unit
       genome[i] = (genome[i] + rand(3)) % 3
     end
   end
-
-  def <=>(target)
-    self.fitness <=> target.fitness
-  end
 end
 

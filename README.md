@@ -31,7 +31,6 @@ require methods:
 * `Unit#fitness=` #set fitness
 * `Unit#cross!(target_unit)`
 * `Unit#mutate!`
-* `Unit#<=>(target_unit)`
 
 ```
 class Unit
@@ -62,10 +61,6 @@ class Unit
       i = rand(3)
       genome[i] = (genome[i] + rand(3)) % 3
     end
-  end
-
-  def <=>(target)
-    self.fitness <=> target.fitness
   end
 end
 ```
