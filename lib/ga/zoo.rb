@@ -6,10 +6,13 @@ module GA
       @unit_cls = unit_cls
       @debug = false
       @before_fitness_callback = nil
+      @elite_policy = false
+      @select_sample = 2
     end
 
     def evolve(units = 32, generations = 100, crossover_rate = 0.8, mutation_rate = 0.15)
       units = units.times.map { unit_cls.random_new } if units.is_a?(Fixnum)
+      @start_at = Time.now
 
       generations.times do |i|
         @before_fitness_callback.call(units, i + 1) if @before_fitness_callback
@@ -27,6 +30,14 @@ module GA
       @debug = true
     end
 
+    def set_select_sample(val)
+      @select_sample = val
+    end
+
+    def elite_policy!
+      @elite_policy = true
+    end
+
     def before_init_fitness(&block)
       @before_fitness_callback = block
     end
@@ -36,16 +47,18 @@ module GA
 
     def select_units(units)
       new_units = units.map do
-        ou = units.sample(3).max
+        ou = units.sample(@select_sample).max
         unit_cls.new(ou.genome).tap {|u| u.fitness = ou.fitness }
       end
 
-      # Elite policy
-      min_index = new_units.index(new_units.min)
-      if min_index != 0 then
-        new_units[min_index], new_units[0] = new_units[0], new_units[min_index]
+      if @elite_policy
+        min_index = new_units.index(new_units.min)
+        if min_index != 0 then
+          new_units[min_index], new_units[0] = new_units[0], new_units[min_index]
+        end
+        new_units[0] = unit_cls.new(units.max.genome)
       end
-      new_units[0] = unit_cls.new(units.max.genome)
+
       new_units
     end
 
@@ -53,7 +66,7 @@ module GA
       last_index = nil
 
       units.each_with_index do |unit, index|
-        next if index == 0
+        next if @elite_policy && index == 0
         next if rand() >= rate
 
         if last_index
@@ -69,7 +82,7 @@ module GA
 
     def mutate(units, rate)
       units.each_with_index do |unit, index|
-        next if index == 0
+        next if @elite_policy && index == 0
         next if rand() >= rate
         unit.mutate!
         # recalculate fitness
@@ -80,6 +93,7 @@ module GA
     def output_debug_info(units, generations, generation)
       units.sort!
       info = [
+        "[#{(Time.now - @start_at).to_f}]",
         "GA-#{generation}/#{generations} #{units.count}-#{units[-1].genome.length}",
         ' fitness: '
       ]
@@ -88,6 +102,7 @@ module GA
         info << units.map(&:fitness).join(', ')
       else
         info << "#{units[0..2].map(&:fitness).join(', ')}"
+        info << " ... #{units[units.length / 2].fitness}"
         info << " ... #{units[-5..-1].map(&:fitness).join(', ')}"
       end
 

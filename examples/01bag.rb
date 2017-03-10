@@ -82,7 +82,9 @@ Benchmark.bm do |x|
   x.report('a') do
     puts 'start'
     100.times do
-      units = Unit.evolve(32, 100, 0.8, 0.15)
+      ga = Unit.new_ga_zoo
+      ga.elite_policy!
+      units = ga.evolve(20, 100, 0.8, 0.15)
       unit = units.max
       print unit.inspect + "\r"
       r[unit.fitness] ||= 0

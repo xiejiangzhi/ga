@@ -64,25 +64,28 @@ RSpec.describe GA::Zoo do
       units = 4.times.map { Unit.random_new }
       expect {
         gz.evolve(units, 1)
-      }.to output("GA-1/1 4-3 fitness: #{units.map(&:fitness).sort.join(', ')}\n").to_stdout
+      }.to output(
+        /^\[.+\]GA-1\/1 4-3 fitness: #{units.map(&:fitness).sort.join(', ')}\s$/
+      ).to_stdout
 
       units = 10.times.map { Unit.random_new }
       head = units.sort[0..2].map(&:fitness).join(', ')
       foot = units.sort[-5..-1].map(&:fitness).join(', ')
+      midd = units.sort[units.length / 2].fitness
       expect {
         gz.evolve(units, 1)
-      }.to output("GA-1/1 10-3 fitness: #{head} ... #{foot}\n").to_stdout
+      }.to output(/^\[.+\]GA-1\/1 10-3 fitness: #{head} ... #{midd} ... #{foot}\s$/).to_stdout
     end
 
     it 'should generate better next generation' do
-      units = 3.times.map { Unit.random_new }
+      units = 2.times.map { Unit.random_new }
       new_units = gz.evolve(units, 1, 0, 0)
-      expect(new_units.map(&:fitness)).to eql([units.max.fitness] * 3)
+      expect(new_units.map(&:fitness)).to eql([units.max.fitness] * 2)
 
       10.times do
-        units = 5.times.map { Unit.random_new }
-        new_units = gz.evolve(units, 3)
-        expect(new_units.max <=> units.max).to be >= 0
+        units = 6.times.map { Unit.random_new }
+        new_units = gz.evolve(units, 5)
+        expect(new_units.map(&:fitness).reduce(&:+)).to be >= units.map(&:fitness).reduce(&:+)
       end
     end
 

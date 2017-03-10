@@ -6,7 +6,11 @@
 /doc/
 /pkg/
 /spec/reports/
+/spec/examples.txt
 /tmp/
 
 *.swp
 *.gem
+
+/examples/*.o
+/examples/*.so
