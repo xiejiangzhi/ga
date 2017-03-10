@@ -58,6 +58,17 @@ RSpec.describe GA::Zoo do
       gz.evolve(units, 2)
     end
 
+    it 'should call after_select_callback if set after_select' do
+      p = Proc.new { 1 }
+      units = 3.times.map { Unit.random_new }
+
+      expect(p).to receive(:call).with(kind_of(Array), 1).ordered
+      expect(p).to receive(:call).with(kind_of(Array), 2).ordered
+
+      gz.after_select(&p)
+      gz.evolve(units, 2)
+    end
+
     it 'should output debug info if call #debug!' do
       gz.debug!
 

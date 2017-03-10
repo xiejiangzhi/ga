@@ -1,11 +1,12 @@
 module GA
   class Zoo
-    attr_reader :unit_cls
+    attr_reader :unit_cls, :before_fitness_callback, :after_select_callback
 
     def initialize(unit_cls)
       @unit_cls = unit_cls
       @debug = false
       @before_fitness_callback = nil
+      @after_select_callback = nil
       @elite_policy = false
       @select_sample = 2
     end
@@ -19,6 +20,8 @@ module GA
         output_debug_info(units, generations, i + 1) if @debug
 
         units = select_units(units)
+        @after_select_callback.call(units, i + 1) if @after_select_callback
+
         cross(units, crossover_rate)
         mutate(units, mutation_rate)
       end
@@ -42,6 +45,10 @@ module GA
       @before_fitness_callback = block
     end
 
+    def after_select(&block)
+      @after_select_callback = block
+    end
+
 
     private
 
@@ -56,7 +63,8 @@ module GA
         if min_index != 0 then
           new_units[min_index], new_units[0] = new_units[0], new_units[min_index]
         end
-        new_units[0] = unit_cls.new(units.max.genome)
+        max_unit = units.max
+        new_units[0] = unit_cls.new(max_unit.genome)
       end
 
       new_units
